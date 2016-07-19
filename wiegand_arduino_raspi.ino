@@ -1,7 +1,13 @@
+/*
+Dahua Wiegand keypad with card reader 125 kHz
+1k pullup resistors between D0, D1 and +5V
+*/
+
 #include <Wiegand.h>
 
 const byte keylockPin = 10;
-int openMillis = 4000;
+const byte monitorPin = 13;
+int openMillis = 4000; // door open interval ms
 
 #include "codes.h"
 
@@ -21,8 +27,8 @@ void setup() {
         pinMode(3, INPUT_PULLUP);
         pinMode(keylockPin, OUTPUT);
         digitalWrite(keylockPin, HIGH);
-        pinMode(13, OUTPUT);
-        digitalWrite(13, LOW); 
+        pinMode(monitorPin, OUTPUT);
+        digitalWrite(monitorPin, LOW); 
         listCodes(); 
         Serial.println("SETUP...");
 }
@@ -31,12 +37,21 @@ byte wholeCode = false;
 String inCode = ""; 
 String prefix = "";
 unsigned long time = millis(); 
+unsigned long beginTime = millis();
 
 void loop() {
   // long time since last key
   if (millis() - time > 10000) {
     inCode = "";
     wholeCode = false; 
+  }
+  String command = readCommand(100);
+  if (command != "") {
+    Serial.println("<= " + command);
+    if (command == "open") {
+      Serial.println("demandOPEN");
+      keyUnlock(keylockPin, openMillis);
+    }
   }
   if(wg.available())
   {
@@ -75,14 +90,21 @@ void loop() {
 
 void keyUnlock(byte pin, int time) {
   digitalWrite(pin, LOW); 
-  digitalWrite(13, HIGH);
+  digitalWrite(monitorPin, HIGH);
   delay(time); 
+  // if code is in web codes too - kill open command
+  while (Serial.available()) {
+    byte inByte = Serial.read();
+  }
   digitalWrite(pin, HIGH) ; 
-  digitalWrite(13, LOW);
+  digitalWrite(monitorPin, LOW);
 }
 
 void listCodes() {
-  for (int i =0; i< ARRAYSIZE; i++) Serial.println(codes[i]);  
+  for (int i =0; i< ARRAYSIZE; i++) { 
+    Serial.print("# ");
+    Serial.println(codes[i]);  
+  }
 }
 
 byte testCodes(String code) {
@@ -104,9 +126,17 @@ byte testCodes(String code) {
       break;
     }  
   }
-  String command = readCommand(10000);
+  String command = readCommand(100);
   Serial.println(command); 
-  if (command == "open") ok = true; 
+  if (command == "open") {
+    ok = true; 
+    Serial.println("softOPEN");
+  }
+  if (command == "service") {
+    ok = false;
+    wholeCode = false; 
+    inCode = ""; 
+  }
   return ok;
 }
 
