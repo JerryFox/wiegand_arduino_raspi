@@ -45,7 +45,7 @@ void loop() {
     inCode = "";
     wholeCode = false; 
   }
-  String command = readCommand(100);
+  String command = readCommand(50);
   if (command != "") {
     Serial.println("<= " + command);
     if (command == "open") {
@@ -126,7 +126,7 @@ byte testCodes(String code) {
       break;
     }  
   }
-  String command = readCommand(100);
+  String command = readCommand(50);
   Serial.println(command); 
   if (command == "open") {
     ok = true; 
