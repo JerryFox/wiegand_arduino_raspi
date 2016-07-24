@@ -87,6 +87,8 @@ def loop():
     global codes_json, codes_list
     last_download = time.time()
     delay_download = 30 * 60
+    f = open("logacces.txt", "a", 0)
+    f.write("================= restart\n")
     while True:
         if time.time() > last_download + delay_download: 
             istate = init()
@@ -98,6 +100,7 @@ def loop():
             else: 
                 imsg = "download error ... "
             print(imsg + str(time.asctime(time.gmtime(time.time()))))
+            f.write(imsg + str(time.asctime(time.gmtime(time.time()))) + "\n")
         command = read_command(ser_port)
         if command != "": 
             # command processing
