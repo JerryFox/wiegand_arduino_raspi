@@ -8,36 +8,45 @@ import serial, time
 import json
 import requests
 
+# download address
+ADDRESS = "http://vysoky.pythonanywhere.com/access/6eebabbeba3f162859636d349a3e74fd9cbeff5c/dump_codes.json"
+ADDRESS = "http://localhost:8000/access/6eebabbeba3f162859636d349a3e74fd9cbeff5c/dump_codes.json"
+
 global codes_json, codes_list
 
 codes_json = []
-code_list = []
+codes_list = []
 
 
-ser_port = serial.Serial("/dev/ttyS0")
-ser_port.baudrate = 115200
-
+try: 
+    ser_port = serial.Serial("/dev/ttyS0")
+    ser_port.baudrate = 115200
+except: 
+    ser_port = False
 
 def read_command(ser_port): 
     """read command from alamode
     as command is considered line without \r\n"""
-    command = ""
-    delay = 0.2 # how long to wait for a command
-    # read until new line 
-    begin_time = time.time()
-    inchar = ""
-    while time.time() < begin_time + delay and inchar != "\n": 
-        if ser_port.in_waiting: 
-            inchar = ser_port.read()
-            command += inchar
-    if "\r\n" in command and command.index("\r\n") == len(command) - 2: 
-        command = command[:-2]
-    return command
+    if ser_port: 
+        command = ""
+        delay = 0.2 # how long to wait for a command
+        # read until new line 
+        begin_time = time.time()
+        inchar = ""
+        while time.time() < begin_time + delay and inchar != "\n": 
+            if ser_port.in_waiting: 
+                inchar = ser_port.read()
+                command += inchar
+        if "\r\n" in command and command.index("\r\n") == len(command) - 2: 
+            command = command[:-2]
+        return command
+    else: 
+        return "" 
 
 def download_codes():
     """download codes from web app in json format"""
     global js
-    address = "http://vysoky.pythonanywhere.com/access/6eebabbeba3f162859636d349a3e74fd9cbeff5c/dump_codes.json"
+    address = ADDRESS
     r = requests.get(address)
     if r.ok: 
         js = r.json()
@@ -49,11 +58,7 @@ def download_codes():
 def create_list(js): 
     list1 = []
     for i in range(len(js)): 
-        if js[i]["card_number"]: 
-            list1.append("c" + js[i]["card_number"]
-             )
-        else: 
-            list1.append("k" + js[i]["keyb_number"])
+        list1.append(js[i]["code_input"] + js[i]["code_number"])
     return list1
 
 
