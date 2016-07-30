@@ -9,8 +9,8 @@ import json
 import requests
 
 # download address
-ADDRESS = "http://vysoky.pythonanywhere.com/access/6eebabbeba3f162859636d349a3e74fd9cbeff5c/dump_codes.json"
 ADDRESS = "http://localhost:8000/access/6eebabbeba3f162859636d349a3e74fd9cbeff5c/dump_codes.json"
+ADDRESS = "http://vysoky.pythonanywhere.com/access/6eebabbeba3f162859636d349a3e74fd9cbeff5c/dump_codes.json"
 
 global codes_json, codes_list
 
