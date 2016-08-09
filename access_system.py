@@ -7,6 +7,8 @@ and django web app
 import serial, time
 import json
 import requests
+import datetime 
+import os
 
 # download address
 ADDRESS = "http://localhost:8000/access/6eebabbeba3f162859636d349a3e74fd9cbeff5c/dump_codes.json"
@@ -27,6 +29,16 @@ except:
 def read_command(ser_port): 
     """read command from alamode
     as command is considered line without \r\n"""
+    if os.path.exists("command.txt"): 
+        f = open("command.txt")
+        c = list(f)
+        f.close()
+        if c: 
+            c = c[0].split("\n")[0]
+        #print(c)
+        os.remove("command.txt")
+        return c
+
     if ser_port: 
         command = ""
         delay = 0.2 # how long to wait for a command
@@ -88,12 +100,17 @@ def init():
             istate = "local" 
     return istate
 
+def stime(): 
+    # ansi date + time with milliseconds
+    return datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S.%f")[:-3]
+
+
 def loop():
     global codes_json, codes_list
     last_download = time.time()
     delay_download = 30 * 60
     f = open("logacces.txt", "a", 0)
-    f.write("================= restart\n")
+    f.write(stime() + " ====== restart\n")
     while True:
         if time.time() > last_download + delay_download: 
             istate = init()
@@ -104,8 +121,8 @@ def loop():
                 imsg = "refreshed from local ..."
             else: 
                 imsg = "download error ... "
-            print(imsg + str(time.asctime(time.gmtime(time.time()))))
-            f.write(imsg + str(time.asctime(time.gmtime(time.time()))) + "\n")
+            print(stime() + " " + imsg)
+            f.write(stime() + " " + imsg + "\n")
         command = read_command(ser_port)
         if command != "": 
             # command processing
@@ -114,15 +131,24 @@ def loop():
                 # refresh code list
                 init() 
                 ser_port.write("service\n") 
+                f.write(stime() + " service" + "\n")
+            elif command.startswith("hardOPEN") or command.startswith("softOPEN"): 
+                f.write(stime() + " " + command + "\n")
+            elif command.startswith("test"): 
+                f.write(stime() + " " + command + "\n")
+                ser_port.write(command + "\n")
             elif command[0] in "kc": 
                 # validate keyboard or card code
+                f.write(stime() + " validate " + command + " - ")
                 if command in codes_list: 
                     # open
                     ser_port.write("open\n") 
                     print(codes_json[codes_list.index(command)]["username"])
+                    f.write("ok " + codes_json[codes_list.index(command)]["username"]+ "\n")
                 else: 
                     # return ko
                     ser_port.write("ko\n")
+                    f.write("ko" + "\n")
                     
 
 init()

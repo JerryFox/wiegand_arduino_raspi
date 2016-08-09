@@ -52,6 +52,9 @@ void loop() {
       Serial.println("demandOPEN");
       keyUnlock(keylockPin, openMillis);
     }
+    else if (command.startsWith("test")) {
+      testCodes(command.substring(4));
+    }
   }
   if(wg.available())
   {
@@ -121,12 +124,14 @@ byte testCodes(String code) {
     //Serial.println(code);
     if (strcmp(codes[i], myCode) == 0) {
       ok = true;
-      Serial.println("hardOPEN");
+      Serial.print("hardOPEN ");
+      Serial.println(code);
       return ok;
       break;
     }  
   }
   String command = readCommand(50);
+  Serial.print("<=");
   Serial.println(command); 
   if (command == "open") {
     ok = true; 
