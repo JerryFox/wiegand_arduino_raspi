@@ -55,6 +55,11 @@ void loop() {
     else if (command.startsWith("test")) {
       testCodes(command.substring(4));
     }
+    else if (command.startsWith("input")) {
+      prefix = command.substring(5, 6);
+      inCode = command.substring(6);
+      wholeCode = true;
+    }
   }
   if(wg.available())
   {
@@ -78,15 +83,15 @@ void loop() {
       inCode = String(wg.getCode(),HEX);
       wholeCode = true; 
     }
-    //Serial.print(prefix + inCode);
-    if (wholeCode) {
-      String prac = "";
-      prac = prefix + inCode;
-      if (testCodes(prac)) {
-        keyUnlock(keylockPin, openMillis);
-        inCode = "";
-        wholeCode = false; 
-      }
+  }
+  //Serial.print(prefix + inCode);
+  if (wholeCode) {
+    String prac = "";
+    prac = prefix + inCode;
+    if (testCodes(prac)) {
+      keyUnlock(keylockPin, openMillis);
+      inCode = "";
+      wholeCode = false; 
     }
   }
 }
@@ -94,6 +99,7 @@ void loop() {
 void keyUnlock(byte pin, int time) {
   digitalWrite(pin, LOW); 
   digitalWrite(monitorPin, HIGH);
+  Serial.println("UNLOCKED...");
   delay(time); 
   // if code is in web codes too - kill open command
   while (Serial.available()) {
@@ -101,6 +107,7 @@ void keyUnlock(byte pin, int time) {
   }
   digitalWrite(pin, HIGH) ; 
   digitalWrite(monitorPin, LOW);
+  Serial.println("LOCKED...");
 }
 
 void listCodes() {

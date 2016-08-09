@@ -134,9 +134,12 @@ def loop():
                 f.write(stime() + " service" + "\n")
             elif command.startswith("hardOPEN") or command.startswith("softOPEN"): 
                 f.write(stime() + " " + command + "\n")
-            elif command.startswith("test"): 
+            elif command.startswith("test") or command.startswith("input"): 
                 f.write(stime() + " " + command + "\n")
                 ser_port.write(command + "\n")
+            elif command.startswith("send"): 
+                f.write(stime() + " " + command + "\n")
+                ser_port.write(command[4:] + "\n")
             elif command[0] in "kc": 
                 # validate keyboard or card code
                 f.write(stime() + " validate " + command + " - ")
