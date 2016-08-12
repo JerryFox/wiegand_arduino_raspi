@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+
 """access system for Mr. Petrik
 python part for raspi
 it communicates with alamode shield (arduino)
@@ -59,7 +61,10 @@ def download_codes():
     """download codes from web app in json format"""
     global js
     address = ADDRESS
-    r = requests.get(address)
+    try: 
+        r = requests.get(address)
+    except ConnectionError: 
+        return False
     if r.ok: 
         js = r.json()
         json.dump(js, open("dump_codes.json", "w"))
